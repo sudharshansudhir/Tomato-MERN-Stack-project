@@ -1,12 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
 import "./Cart.css";
 import { useNavigate } from "react-router-dom";
-import axios from "../../axios";
-import { StoreContext } from '../../context/StoreContext'
-
+import axios from "../../axios"; // ✅ This should already use VITE_API_URL
+import { StoreContext } from "../../context/StoreContext";
 
 const Cart = () => {
-  const {syncCartWithBackend} = useContext(StoreContext)
+  const { syncCartWithBackend } = useContext(StoreContext);
   const [mycarts, setMyCarts] = useState([]);
   const navigate = useNavigate();
 
@@ -14,7 +13,7 @@ const Cart = () => {
     const fetchCart = async () => {
       try {
         const token = localStorage.getItem("token");
-        const resp = await axios.get("http://localhost:3000/pages/cart", {
+        const resp = await axios.get("/pages/cart", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setMyCarts(resp.data.items || []);
@@ -23,32 +22,34 @@ const Cart = () => {
         console.error("Cart fetch error:", err);
       }
     };
+
     fetchCart();
-  }, [mycarts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // ✅ Remove mycarts dependency to avoid infinite loop
 
- const removeFromCart = async (itemId) => {
-  try {
-    const token = localStorage.getItem("token");
-    await axios.post(
-      "http://localhost:3000/pages/cart-remove",
-      { itemId },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+  const removeFromCart = async (itemId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        "/pages/cart-remove",
+        { itemId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    // ✅ Safely update state
-    setMyCarts((prev) =>
-      prev.filter((item) => {
-        const currentId =
-          typeof item.itemId === "object" ? item.itemId._id : item.itemId;
-        return currentId !== itemId;
-      })
-    );
-    await syncCartWithBackend();
-  } catch (err) {
-    console.error("Remove error:", err);
-  }
-};
+      // ✅ Update cart in state without re-fetching
+      setMyCarts((prev) =>
+        prev.filter((item) => {
+          const currentId =
+            typeof item.itemId === "object" ? item.itemId._id : item.itemId;
+          return currentId !== itemId;
+        })
+      );
 
+      await syncCartWithBackend();
+    } catch (err) {
+      console.error("Remove error:", err);
+    }
+  };
 
   const getTotalCartAmount = () => {
     if (!mycarts || mycarts.length === 0) return 0;
@@ -93,7 +94,6 @@ const Cart = () => {
             </div>
           );
         })}
-
       </div>
 
       <div className="cart-bottom">
