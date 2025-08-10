@@ -13,6 +13,12 @@ dotenv.config();
 
 // Connect MongoDB
 connectDB();
+import cors from 'cors';
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true
+}));
+
 
 // Init app 
 const app = express();
