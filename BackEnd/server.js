@@ -22,9 +22,7 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
-// Middlewares
-app.use(cors());
+
 app.use(express.json());
 
 app.use("/images", express.static(path.join(__dirname, "images")));
