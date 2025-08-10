@@ -1,40 +1,43 @@
 // server.js
 
-const express = require('express');
-const dotenv = require('dotenv');
-const path=require("path")
-const authRoutes=require("./routes/authRoutes")
-const pageroutes=require("./routes/pageroutes")
-const cors = require('cors');
-const connectDB = require('./config/db');
+const express = require("express");
+const dotenv = require("dotenv");
+const path = require("path");
+const cors = require("cors");
+const connectDB = require("./config/db");
 
-// Load .env variables
+// Routes
+const authRoutes = require("./routes/authRoutes");
+const pageRoutes = require("./routes/pageroutes");
+
+// Load environment variables
 dotenv.config();
 
-// Connect MongoDB
+// Connect to MongoDB
 connectDB();
 
-
-// Init app 
+// Initialize app
 const app = express();
-app.use(cors({
-  origin: process.env.FRONTEND_URL,
-  credentials: true
-}));
 
+// Middleware
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "*", // fallback for safety
+    credentials: true,
+  })
+);
 
 app.use(express.json());
-
 app.use("/images", express.static(path.join(__dirname, "images")));
 
-// // Routes (to be created later)
-app.use('/', authRoutes);
-app.use("/pages",pageroutes)
+// Routes
+app.use("/", authRoutes);
+app.use("/pages", pageRoutes);
 
-app.get("/",(req,res)=>{
-    res.send("Node+Express created ");
-})
-
+// Health check route
+app.get("/", (req, res) => {
+  res.send("✅ Node + Express server is running");
+});
 
 // Start server
 const PORT = process.env.PORT || 3000;
